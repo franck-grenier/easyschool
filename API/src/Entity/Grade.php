@@ -2,6 +2,7 @@
 
 namespace App\Entity;
 
+use Symfony\Component\Validator\Constraints as Assert;
 use App\Repository\GradeRepository;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -19,6 +20,8 @@ class Grade
 
     /**
      * @ORM\Column(type="float")
+     * @Assert\GreaterThanOrEqual(0)
+     * @Assert\LessThanOrEqual(20)
      */
     private $grade;
 
