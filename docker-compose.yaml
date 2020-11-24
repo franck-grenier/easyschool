@@ -1,0 +1,11 @@
+version: '3'
+
+services:
+  database:
+    image: postgres:11-alpine
+    environment:
+      POSTGRES_USER: easyschool
+      POSTGRES_PASSWORD: easyschool
+      POSTGRES_DB: easyschool
+    ports: [5432]
+
