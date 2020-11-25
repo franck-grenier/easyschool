@@ -5,6 +5,7 @@ namespace App\Entity;
 use App\Repository\StudentRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
@@ -16,26 +17,31 @@ class Student
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
+     * @Groups({"student:read", "student:create"})
      */
     private $id;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups({"student:read", "student:create"})
      */
     private $name;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups({"student:read", "student:create"})
      */
     private $firstname;
 
     /**
      * @ORM\Column(type="date")
+     * @Groups({"student:read", "student:create"})
      */
     private $birthdate;
 
     /**
      * @ORM\OneToMany(targetEntity=Grade::class, mappedBy="student", orphanRemoval=true)
+     * @Groups("student:read")
      */
     private $grades;
 

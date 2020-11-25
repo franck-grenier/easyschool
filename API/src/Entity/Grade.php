@@ -5,6 +5,7 @@ namespace App\Entity;
 use Symfony\Component\Validator\Constraints as Assert;
 use App\Repository\GradeRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 /**
  * @ORM\Entity(repositoryClass=GradeRepository::class)
@@ -15,6 +16,7 @@ class Grade
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
+     * @Groups("student:read")
      */
     private $id;
 
@@ -22,11 +24,13 @@ class Grade
      * @ORM\Column(type="float")
      * @Assert\GreaterThanOrEqual(0)
      * @Assert\LessThanOrEqual(20)
+     * @Groups("student:read")
      */
     private $grade;
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Groups("student:read")
      */
     private $subject;
 
