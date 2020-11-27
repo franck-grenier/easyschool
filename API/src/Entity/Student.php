@@ -7,9 +7,12 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 /**
  * @ORM\Entity(repositoryClass=StudentRepository::class)
+ * @ORM\HasLifecycleCallbacks()
+ * @UniqueEntity("identifier")
  */
 class Student
 {
@@ -17,9 +20,15 @@ class Student
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @Groups({"student:read", "student:create"})
      */
     private $id;
+
+    /**
+     * For security matters, to avoid URLs guessing
+     * @ORM\Column(type="string", length=255, unique=true)
+     * @Groups({"student:read", "student:create"})
+     */
+    private $identifier;
 
     /**
      * @ORM\Column(type="string", length=255)
@@ -119,5 +128,25 @@ class Student
         }
 
         return $this;
+    }
+
+    public function getIdentifier(): ?string
+    {
+        return $this->identifier;
+    }
+
+    public function setIdentifier(string $identifier): self
+    {
+        $this->identifier = $identifier;
+
+        return $this;
+    }
+
+    /**
+     * @ORM\PrePersist
+     */
+    public function computeUniqueID(): void
+    {
+        $this->identifier = uniqid();
     }
 }

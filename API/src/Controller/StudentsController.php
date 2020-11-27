@@ -7,7 +7,6 @@ use App\Entity\Grade;
 use App\Repository\StudentRepository;
 use App\Repository\GradeRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use phpDocumentor\Reflection\Types\Integer;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
@@ -26,16 +25,30 @@ class StudentsController extends AbstractController
     }
 
     /**
-     * @Route("/students", name="index", methods={"GET"})
-     * @Route("/students/{id}", name="student_by_id", methods={"GET"})
+     * @Route("/students", name="students_list", methods={"GET"})
      */
-    public function index(Request $request, SerializerInterface $serializer, String $id = null): Response
+    public function getAllStudents(Request $request): Response
     {
-        $id ?
-            $data = $this->studentRepo->findOneBy(["id" => (int) $id]) :
-            $data = $this->studentRepo->findAll();
+        return $this->json($this->studentRepo->findAll(), 200, [], ['groups' => 'student:read']);
+    }
 
-        return $this->json($data, 200, [], ['groups' => 'student:read']);
+    /**
+     * @todo utiliser l'autowiring pour injecter directement l'entity Student à partir de l'identifier sans avoir à faire appel au repo
+     *
+     * @Route("/students/{identifier}", name="student_by_identifier", methods={"GET"})
+     */
+    public function getOneStudent(Request $request, String $identifier = null): Response
+    {
+        if (null === $identifier) {
+            return $this->json("", Response::HTTP_BAD_REQUEST);
+        }
+
+        $student = $this->studentRepo->findOneBy(array('identifier' => $identifier));
+        if (null === $student) {
+            return $this->json("", Response::HTTP_NOT_FOUND);
+        }
+
+        return $this->json($student, Response::HTTP_OK, [], ['groups' => 'student:read']);
     }
 
     /**
@@ -52,7 +65,7 @@ class StudentsController extends AbstractController
     }
 
     /**
-     * @Route("/students/{id}", name="student_update", methods={"PUT", "PATCH"})
+     * @Route("/students/{identifier}", name="student_update", methods={"PUT", "PATCH"})
      */
     public function update(Request $request, SerializerInterface $serializer, EntityManagerInterface $entityManager): Response
     {
