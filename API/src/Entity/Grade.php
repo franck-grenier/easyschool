@@ -22,6 +22,7 @@ class Grade
 
     /**
      * @ORM\Column(type="float")
+     * @Assert\NotBlank
      * @Assert\GreaterThanOrEqual(0)
      * @Assert\LessThanOrEqual(20)
      * @Groups("student:read")
@@ -30,6 +31,7 @@ class Grade
 
     /**
      * @ORM\Column(type="string", length=255)
+     * @Assert\NotBlank
      * @Groups("student:read")
      */
     private $subject;
