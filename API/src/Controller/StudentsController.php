@@ -46,15 +46,13 @@ class StudentsController extends AbstractController
     {
         try {
             $student = $this->studentRepo->findOneByIdentifier($identifier);
-        }
-        catch (BadRequestHttpException $e) {
+
+            return $this->json($student, Response::HTTP_OK, [], ['groups' => 'student:read']);
+        } catch (BadRequestHttpException $e) {
             return $this->json($e->getMessage(), Response::HTTP_BAD_REQUEST);
-        }
-        catch (NotFoundHttpException $e) {
+        } catch (NotFoundHttpException $e) {
             return $this->json($e->getMessage(), Response::HTTP_NOT_FOUND);
         }
-
-        return $this->json($student, Response::HTTP_OK, [], ['groups' => 'student:read']);
     }
 
     /**
@@ -77,9 +75,9 @@ class StudentsController extends AbstractController
 
             $entityManager->persist($student);
             $entityManager->flush();
+
             return $this->json($student, Response::HTTP_CREATED, [], ['groups' => 'student:create']);
-        }
-        catch (NotEncodableValueException $e) {
+        } catch (NotEncodableValueException $e) {
             return $this->json($e->getMessage(), Response::HTTP_BAD_REQUEST);
         }
     }
@@ -114,15 +112,13 @@ class StudentsController extends AbstractController
 
             $entityManager->persist($updatedStudent);
             $entityManager->flush();
+
             return $this->json($updatedStudent, Response::HTTP_OK, [], ['groups' => 'student:create']);
-        }
-        catch (BadRequestHttpException $e) {
+        } catch (BadRequestHttpException $e) {
             return $this->json($e->getMessage(), Response::HTTP_BAD_REQUEST);
-        }
-        catch (NotFoundHttpException $e) {
+        } catch (NotFoundHttpException $e) {
             return $this->json($e->getMessage(), Response::HTTP_NOT_FOUND);
-        }
-        catch (NotEncodableValueException $e) {
+        } catch (NotEncodableValueException $e) {
             return $this->json($e->getMessage(), Response::HTTP_BAD_REQUEST);
         }
     }
@@ -138,11 +134,52 @@ class StudentsController extends AbstractController
             $entityManager->flush();
 
             return $this->json("", Response::HTTP_NO_CONTENT);
-        }
-        catch (BadRequestHttpException $e) {
+        } catch (BadRequestHttpException $e) {
             return $this->json($e->getMessage(), Response::HTTP_BAD_REQUEST);
+        } catch (NotFoundHttpException $e) {
+            return $this->json($e->getMessage(), Response::HTTP_NOT_FOUND);
         }
-        catch (NotFoundHttpException $e) {
+    }
+
+    /**
+     * @Route("/students/{identifier}/grades", name="student_add_grade", methods={"POST"})
+     *
+     * @param Request $request
+     * @param EntityManagerInterface $entityManager
+     * @param String|null $identifier
+     * @return Response
+     */
+    public function addGrade(
+        Request $request,
+        SerializerInterface $serializer,
+        EntityManagerInterface $entityManager,
+        ValidatorInterface $validator,
+        String $identifier = null
+    ): Response
+    {
+        try {
+            $studentToGrade = $this->studentRepo->findOneByIdentifier($identifier);
+
+            $data = $request->getContent();
+            $grade = $serializer->deserialize(
+                $data,
+                Grade::class,
+                'json'
+            );
+
+            $errors = $validator->validate($grade);
+            if (count($errors) > 0) {
+                return $this->json($errors, Response::HTTP_BAD_REQUEST);
+            }
+
+            $entityManager->persist($grade);
+            $grade->setStudent($studentToGrade);
+            $entityManager->flush();
+
+            return $this->json($grade, Response::HTTP_CREATED, [], ['groups' => 'grade:create']);
+        } catch (BadRequestHttpException $e) {
+            return $this->json($e->getMessage(), Response::HTTP_BAD_REQUEST);
+        } catch (NotFoundHttpException $e) {
             return $this->json($e->getMessage(), Response::HTTP_NOT_FOUND);
         }
     }
