@@ -5,6 +5,8 @@ namespace App\Repository;
 use App\Entity\Student;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 /**
  * @method Student|null find($id, $lockMode = null, $lockVersion = null)
@@ -19,32 +21,29 @@ class StudentRepository extends ServiceEntityRepository
         parent::__construct($registry, Student::class);
     }
 
-    // /**
-    //  * @return Student[] Returns an array of Student objects
-    //  */
-    /*
-    public function findByExampleField($value)
+    /**
+     * Custom method to get one student from its identifier, used often
+     * throws a NotFoundHttpException to have a clean error handling in controllers
+     *
+     * @todo We could discuss that a repository should not throw HTTP exceptions but I think it's fine for the exercise.
+     *
+     * @param String|null $identifier
+     * @return Student|null
+     * @throws NotFoundHttpException|BadRequestHttpException
+     */
+    public function findOneByIdentifier(String $identifier = null)
     {
-        return $this->createQueryBuilder('s')
-            ->andWhere('s.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('s.id', 'ASC')
-            ->setMaxResults(10)
-            ->getQuery()
-            ->getResult()
-        ;
-    }
-    */
+        // @todo normalize "identifier" format (ie. UUID) and check this format here
+        if (null === $identifier) {
+            throw new BadRequestHttpException("No identifier given");
+        }
+        
+        $student = $this->findOneBy(array('identifier' => $identifier));
 
-    /*
-    public function findOneBySomeField($value): ?Student
-    {
-        return $this->createQueryBuilder('s')
-            ->andWhere('s.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
+        if (null === $student) {
+            throw new NotFoundHttpException(sprintf("No student with identifier %s", $identifier));
+        }
+
+        return $student;
     }
-    */
 }

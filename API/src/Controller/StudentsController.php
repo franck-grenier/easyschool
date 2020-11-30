@@ -10,6 +10,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\Exception\NotEncodableValueException;
@@ -43,13 +44,14 @@ class StudentsController extends AbstractController
      */
     public function getOne(Request $request, String $identifier = null): Response
     {
-        if (null === $identifier) {
-            return $this->json("", Response::HTTP_BAD_REQUEST);
+        try {
+            $student = $this->studentRepo->findOneByIdentifier($identifier);
         }
-
-        $student = $this->studentRepo->findOneBy(array('identifier' => $identifier));
-        if (null === $student) {
-            return $this->json("", Response::HTTP_NOT_FOUND);
+        catch (BadRequestHttpException $e) {
+            return $this->json($e->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
+        catch (NotFoundHttpException $e) {
+            return $this->json($e->getMessage(), Response::HTTP_NOT_FOUND);
         }
 
         return $this->json($student, Response::HTTP_OK, [], ['groups' => 'student:read']);
@@ -76,27 +78,27 @@ class StudentsController extends AbstractController
             $entityManager->persist($student);
             $entityManager->flush();
             return $this->json($student, Response::HTTP_CREATED, [], ['groups' => 'student:create']);
-        } catch (NotEncodableValueException $e) {
+        }
+        catch (NotEncodableValueException $e) {
             return $this->json($e->getMessage(), Response::HTTP_BAD_REQUEST);
         }
     }
 
     /**
+     * Update method handling both PATCH and PUT verbs on a single route, not "HTTP conventional"...
+     * but very practical for a client
+     *
      * @Route("/students/{identifier}", name="student_update", methods={"PATCH", "PUT"})
      */
-    public function updateFull(
+    public function update(
         Request $request,
         SerializerInterface $serializer,
         EntityManagerInterface $entityManager,
-        String $identifier = null,
-        ValidatorInterface $validator
+        ValidatorInterface $validator,
+        String $identifier = null
     ): Response {
         try {
-            $studentToUpdate = $this->studentRepo->findOneBy(array('identifier' => $identifier));
-            if (null === $studentToUpdate) {
-                return $this->json("", Response::HTTP_NOT_FOUND);
-            }
-
+            $studentToUpdate = $this->studentRepo->findOneByIdentifier($identifier);
             $data = $request->getContent();
             $updatedStudent = $serializer->deserialize(
                 $data,
@@ -114,6 +116,12 @@ class StudentsController extends AbstractController
             $entityManager->flush();
             return $this->json($updatedStudent, Response::HTTP_OK, [], ['groups' => 'student:create']);
         }
+        catch (BadRequestHttpException $e) {
+            return $this->json($e->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
+        catch (NotFoundHttpException $e) {
+            return $this->json($e->getMessage(), Response::HTTP_NOT_FOUND);
+        }
         catch (NotEncodableValueException $e) {
             return $this->json($e->getMessage(), Response::HTTP_BAD_REQUEST);
         }
@@ -122,20 +130,20 @@ class StudentsController extends AbstractController
     /**
      * @Route("/students/{identifier}", name="student_delete", methods={"DELETE"})
      */
-    public function delete(Request $request, String $identifier = null, EntityManagerInterface $entityManager): Response
+    public function delete(Request $request, EntityManagerInterface $entityManager, String $identifier = null): Response
     {
-        $studentToDelete = $this->studentRepo->findOneBy(array('identifier' => $identifier));
-        if (null === $studentToDelete) {
-            return $this->json("", Response::HTTP_NOT_FOUND);
-        }
-
         try {
+            $studentToDelete = $this->studentRepo->findOneByIdentifier($identifier);
             $entityManager->remove($studentToDelete);
             $entityManager->flush();
 
             return $this->json("", Response::HTTP_NO_CONTENT);
-        } catch (Exception $e) {
-            return $this->json($e->getMessage(), Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+        catch (BadRequestHttpException $e) {
+            return $this->json($e->getMessage(), Response::HTTP_BAD_REQUEST);
+        }
+        catch (NotFoundHttpException $e) {
+            return $this->json($e->getMessage(), Response::HTTP_NOT_FOUND);
         }
     }
 
