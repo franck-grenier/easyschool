@@ -3,8 +3,10 @@
 namespace App\Repository;
 
 use App\Entity\Grade;
+use App\Entity\Student;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
+use App\Exception\NoGradesException;
 
 /**
  * @method Grade|null find($id, $lockMode = null, $lockVersion = null)
@@ -19,32 +21,44 @@ class GradeRepository extends ServiceEntityRepository
         parent::__construct($registry, Grade::class);
     }
 
-    // /**
-    //  * @return Grade[] Returns an array of Grade objects
-    //  */
-    /*
-    public function findByExampleField($value)
+    /**
+     * @param Student $student
+     * @return mixed
+     * @throws \Doctrine\ORM\NoResultException
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
+    public function getStudentAverage(Student $student)
     {
         return $this->createQueryBuilder('g')
-            ->andWhere('g.exampleField = :val')
-            ->setParameter('val', $value)
-            ->orderBy('g.id', 'ASC')
-            ->setMaxResults(10)
+            ->select('avg(g.grade)')
+            ->andWhere('g.student = :student')
+            ->setParameter('student', $student)
             ->getQuery()
-            ->getResult()
-        ;
-    }
-    */
+            ->getSingleScalarResult();
 
-    /*
-    public function findOneBySomeField($value): ?Grade
-    {
-        return $this->createQueryBuilder('g')
-            ->andWhere('g.exampleField = :val')
-            ->setParameter('val', $value)
-            ->getQuery()
-            ->getOneOrNullResult()
-        ;
+//        if (null == $average) {
+//            throw new NoGradesException($student);
+//        }
+
+        return $average;
     }
-    */
+
+    /**
+     * @return mixed
+     * @throws \Doctrine\ORM\NoResultException
+     * @throws \Doctrine\ORM\NonUniqueResultException
+     */
+    public function getGlobalAverage()
+    {
+        $average = $this->createQueryBuilder('g')
+            ->select('avg(g.grade)')
+            ->getQuery()
+            ->getSingleScalarResult();
+
+//        if (null == $average) {
+//            throw new NoGradesException();
+//        }
+
+        return $average;
+    }
 }

@@ -6,16 +6,17 @@ use App\Entity\Student;
 use App\Entity\Grade;
 use App\Repository\StudentRepository;
 use App\Repository\GradeRepository;
-use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Serializer\Exception\NotEncodableValueException;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Doctrine\ORM\EntityManagerInterface;
+use App\Exception\NoGradesException;
+use Symfony\Component\Serializer\Exception\NotEncodableValueException;
+use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class StudentsController extends AbstractController
 {
@@ -155,8 +156,7 @@ class StudentsController extends AbstractController
         EntityManagerInterface $entityManager,
         ValidatorInterface $validator,
         String $identifier = null
-    ): Response
-    {
+    ): Response {
         try {
             $studentToGrade = $this->studentRepo->findOneByIdentifier($identifier);
 
@@ -184,4 +184,23 @@ class StudentsController extends AbstractController
         }
     }
 
+
+    /**
+     * @Route("/students/{identifier}/grades/average", name="student_average_grade", methods={"GET"})
+     *
+     * @param String $identifier
+     */
+    public function averageGrade(String $identifier)
+    {
+        try {
+            $student = $this->studentRepo->findOneByIdentifier($identifier);
+            $averageGrade = $this->gradeRepo->getStudentAverage($student);
+
+            return $this->json($averageGrade, Response::HTTP_OK);
+        } catch (BadRequestHttpException $e) {
+            return $this->json($e->getMessage(), Response::HTTP_BAD_REQUEST);
+        } catch (NotFoundHttpException $e) {
+            return $this->json($e->getMessage(), Response::HTTP_NOT_FOUND);
+        }
+    }
 }
