@@ -44,8 +44,8 @@ The API documentation is available on `/api/doc`.
 ## TODOs
 
 We could go further on the exercise with more work :  
-- Add an authentification (simple login/password or better OAuth) with the security component to protect the personal data of the students
-- Setup a more conventional UUID on student entity
+- Add an authentication (simple login/password or better OAuth) with the security component to protect the personal data of the students
+- Setup a more conventional UUID identifier on student entity
 - Add versioning to the API for future evolution needs
 - Add fixtures with test data to start faster
 - Implement unit testing
