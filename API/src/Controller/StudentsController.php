@@ -16,6 +16,7 @@ use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Exception\NoGradesException;
 use Symfony\Component\Serializer\Exception\NotEncodableValueException;
+use OpenApi\Annotations as OA;
 
 class StudentsController extends AbstractController
 {
@@ -29,7 +30,11 @@ class StudentsController extends AbstractController
     }
 
     /**
+     * Returns all students
+     *
      * @Route("/students", name="students_list", methods={"GET"})
+
+     * @OA\Tag(name="Students")
      */
     public function getAll(Request $request): Response
     {
@@ -37,10 +42,13 @@ class StudentsController extends AbstractController
     }
 
     /**
+     * Returns one student from its identifier
+     *
      * @todo utiliser l'autowiring pour injecter directement l'entity Student
      *       à partir de l'identifier sans avoir à faire appel au repo
      *
      * @Route("/students/{identifier}", name="student_by_identifier", methods={"GET"})
+     * @OA\Tag(name="Students")
      */
     public function getOne(Request $request, String $identifier = null): Response
     {
@@ -54,7 +62,11 @@ class StudentsController extends AbstractController
     }
 
     /**
+     * Create one new student
+     *
      * @Route("/students", name="student_create", methods={"POST"})
+     *
+     * @OA\Tag(name="Students")
      */
     public function create(
         Request $request,
@@ -83,10 +95,12 @@ class StudentsController extends AbstractController
     }
 
     /**
-     * Update method handling both PATCH and PUT verbs on a single route, not "HTTP conventional"...
+     * Update student method handling both PATCH and PUT verbs on a single route, not "HTTP conventional"...
      * but very practical for a client
      *
      * @Route("/students/{identifier}", name="student_update", methods={"PATCH", "PUT"})
+     *
+     * @OA\Tag(name="Students")
      */
     public function update(
         Request $request,
@@ -120,7 +134,11 @@ class StudentsController extends AbstractController
     }
 
     /**
+     * Removes a student
+     *
      * @Route("/students/{identifier}", name="student_delete", methods={"DELETE"})
+     *
+     * @OA\Tag(name="Students")
      */
     public function delete(Request $request, EntityManagerInterface $entityManager, String $identifier = null): Response
     {
@@ -136,7 +154,11 @@ class StudentsController extends AbstractController
     }
 
     /**
+     * Add a grade to a student
+     *
      * @Route("/students/{identifier}/grades", name="student_add_grade", methods={"POST"})
+     *
+     * @OA\Tag(name="Students")
      *
      * @param Request $request
      * @param EntityManagerInterface $entityManager
@@ -177,7 +199,11 @@ class StudentsController extends AbstractController
 
 
     /**
+     * Returns the average grade of a student
+     *
      * @Route("/students/{identifier}/grades/average", name="student_average_grade", methods={"GET"})
+     *
+     * @OA\Tag(name="Students")
      *
      * @param String $identifier
      */

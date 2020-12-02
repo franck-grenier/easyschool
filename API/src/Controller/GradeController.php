@@ -8,6 +8,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Routing\Annotation\Route;
+use OpenApi\Annotations as OA;
 
 class GradeController extends AbstractController
 {
@@ -19,7 +20,11 @@ class GradeController extends AbstractController
     }
 
     /**
+     * Returns the global average grade of all students
+     *
      * @Route("/grades/average", name="grade_average", methods={"GET"})
+     *
+     * @OA\Tag(name="Grades")
      */
     public function average(): Response
     {
