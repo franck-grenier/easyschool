@@ -22,31 +22,39 @@ class GradeRepository extends ServiceEntityRepository
     }
 
     /**
+     * returns the average grade of one student
+     *
      * @param Student $student
      * @return mixed
      * @throws \Doctrine\ORM\NoResultException
      * @throws \Doctrine\ORM\NonUniqueResultException
+     * @throws NoGradesException
      */
     public function getStudentAverage(Student $student)
     {
-        return $this->createQueryBuilder('g')
+        $average = $this->createQueryBuilder('g')
             ->select('avg(g.grade)')
             ->andWhere('g.student = :student')
             ->setParameter('student', $student)
             ->getQuery()
             ->getSingleScalarResult();
 
-//        if (null == $average) {
-//            throw new NoGradesException($student);
-//        }
+        if (null === $average) {
+            throw new NoGradesException($student);
+        }
 
         return $average;
     }
 
+
     /**
+     * returns global average of all grades known for all students
+     *
      * @return mixed
+     * @throws NoGradesException
      * @throws \Doctrine\ORM\NoResultException
      * @throws \Doctrine\ORM\NonUniqueResultException
+     * @throws NoGradesException
      */
     public function getGlobalAverage()
     {
@@ -55,9 +63,9 @@ class GradeRepository extends ServiceEntityRepository
             ->getQuery()
             ->getSingleScalarResult();
 
-//        if (null == $average) {
-//            throw new NoGradesException();
-//        }
+        if (null === $average) {
+            throw new NoGradesException();
+        }
 
         return $average;
     }

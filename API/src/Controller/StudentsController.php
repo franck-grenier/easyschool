@@ -9,14 +9,13 @@ use App\Repository\GradeRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Serializer\SerializerInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Exception\NoGradesException;
 use Symfony\Component\Serializer\Exception\NotEncodableValueException;
-use Symfony\Component\HttpKernel\Exception\BadRequestHttpException;
-use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class StudentsController extends AbstractController
 {
@@ -49,10 +48,8 @@ class StudentsController extends AbstractController
             $student = $this->studentRepo->findOneByIdentifier($identifier);
 
             return $this->json($student, Response::HTTP_OK, [], ['groups' => 'student:read']);
-        } catch (BadRequestHttpException $e) {
-            return $this->json($e->getMessage(), Response::HTTP_BAD_REQUEST);
-        } catch (NotFoundHttpException $e) {
-            return $this->json($e->getMessage(), Response::HTTP_NOT_FOUND);
+        } catch (HttpException $e) {
+            return $this->json($e->getMessage(), $e->getStatusCode());
         }
     }
 
@@ -80,6 +77,8 @@ class StudentsController extends AbstractController
             return $this->json($student, Response::HTTP_CREATED, [], ['groups' => 'student:create']);
         } catch (NotEncodableValueException $e) {
             return $this->json($e->getMessage(), Response::HTTP_BAD_REQUEST);
+        } catch (HttpException $e) {
+            return $this->json($e->getMessage(), $e->getStatusCode());
         }
     }
 
@@ -115,12 +114,8 @@ class StudentsController extends AbstractController
             $entityManager->flush();
 
             return $this->json($updatedStudent, Response::HTTP_OK, [], ['groups' => 'student:create']);
-        } catch (BadRequestHttpException $e) {
-            return $this->json($e->getMessage(), Response::HTTP_BAD_REQUEST);
-        } catch (NotFoundHttpException $e) {
-            return $this->json($e->getMessage(), Response::HTTP_NOT_FOUND);
-        } catch (NotEncodableValueException $e) {
-            return $this->json($e->getMessage(), Response::HTTP_BAD_REQUEST);
+        } catch (HttpException $e) {
+            return $this->json($e->getMessage(), $e->getStatusCode());
         }
     }
 
@@ -135,10 +130,8 @@ class StudentsController extends AbstractController
             $entityManager->flush();
 
             return $this->json("", Response::HTTP_NO_CONTENT);
-        } catch (BadRequestHttpException $e) {
-            return $this->json($e->getMessage(), Response::HTTP_BAD_REQUEST);
-        } catch (NotFoundHttpException $e) {
-            return $this->json($e->getMessage(), Response::HTTP_NOT_FOUND);
+        } catch (HttpException $e) {
+            return $this->json($e->getMessage(), $e->getStatusCode());
         }
     }
 
@@ -177,10 +170,8 @@ class StudentsController extends AbstractController
             $entityManager->flush();
 
             return $this->json($grade, Response::HTTP_CREATED, [], ['groups' => 'grade:create']);
-        } catch (BadRequestHttpException $e) {
-            return $this->json($e->getMessage(), Response::HTTP_BAD_REQUEST);
-        } catch (NotFoundHttpException $e) {
-            return $this->json($e->getMessage(), Response::HTTP_NOT_FOUND);
+        } catch (HttpException $e) {
+            return $this->json($e->getMessage(), $e->getStatusCode());
         }
     }
 
@@ -190,17 +181,17 @@ class StudentsController extends AbstractController
      *
      * @param String $identifier
      */
-    public function averageGrade(String $identifier)
+    public function averageGrade(String $identifier): Response
     {
         try {
             $student = $this->studentRepo->findOneByIdentifier($identifier);
             $averageGrade = $this->gradeRepo->getStudentAverage($student);
 
             return $this->json($averageGrade, Response::HTTP_OK);
-        } catch (BadRequestHttpException $e) {
-            return $this->json($e->getMessage(), Response::HTTP_BAD_REQUEST);
-        } catch (NotFoundHttpException $e) {
-            return $this->json($e->getMessage(), Response::HTTP_NOT_FOUND);
+        } catch (NoGradesException $e) {
+            return $this->json($e->getMessage(), Response::HTTP_OK);
+        } catch (HttpException $e) {
+            return $this->json($e->getMessage(), $e->getStatusCode());
         }
     }
 }

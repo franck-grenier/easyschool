@@ -2,9 +2,11 @@
 
 namespace App\Controller;
 
+use App\Exception\NoGradesException;
 use App\Repository\GradeRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\Routing\Annotation\Route;
 
 class GradeController extends AbstractController
@@ -21,6 +23,13 @@ class GradeController extends AbstractController
      */
     public function average(): Response
     {
-        return $this->json($this->gradeRepo->getGlobalAverage(), Response::HTTP_OK);
+        try {
+            return $this->json($this->gradeRepo->getGlobalAverage(), Response::HTTP_OK);
+        } catch (NoGradesException $e) {
+            return $this->json($e->getMessage(), Response::HTTP_OK);
+        } catch (HttpException $e) {
+            return $this->json($e->getMessage(), $e->getStatusCode());
+        }
+
     }
 }
