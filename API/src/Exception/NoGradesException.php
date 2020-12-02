@@ -6,7 +6,7 @@ use App\Entity\Student;
 
 class NoGradesException extends \Exception
 {
-    const NO_GRADES         = "No grades given to any student yet. So no global average grade available.";
+    const NO_GRADES          = "No grades given to any students yet. So no global average grade available.";
     const STUDENT_NO_GRADES  = "Student %s %s has no grades yet. So no average grade available.";
 
     protected $student;
@@ -17,7 +17,7 @@ class NoGradesException extends \Exception
         parent::__construct($this->setMessage());
     }
 
-    private function setMessage()
+    private function setMessage(): string
     {
         $message = (null != $this->student) ?
             sprintf($this::STUDENT_NO_GRADES, $this->student->getFirstname(), $this->student->getName()) :
