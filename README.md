@@ -1,4 +1,4 @@
-# easyschool
+# Easy School test project
 
 a simple API to manage students and grades
 
