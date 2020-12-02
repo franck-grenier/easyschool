@@ -33,7 +33,7 @@ class StudentsController extends AbstractController
      */
     public function getAll(Request $request): Response
     {
-        return $this->json($this->studentRepo->findAll(), 200, [], ['groups' => 'student:read']);
+        return $this->json($this->studentRepo->findAll(), Response::HTTP_OK, [], ['groups' => 'student:read']);
     }
 
     /**

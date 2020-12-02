@@ -35,7 +35,7 @@ class StudentRepository extends ServiceEntityRepository
     {
         // @todo normalize "identifier" format (ie. UUID) and check this format here
         if (null === $identifier) {
-            throw new BadRequestHttpException("No identifier given");
+            throw new BadRequestHttpException("No (or bad) identifier given");
         }
         
         $student = $this->findOneBy(array('identifier' => $identifier));
