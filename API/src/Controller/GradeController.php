@@ -24,6 +24,15 @@ class GradeController extends AbstractController
      *
      * @Route("/grades/average", name="grade_average", methods={"GET"})
      *
+     * @OA\Response(
+     *     response=200,
+     *     description="students global average grade",
+     *     @OA\JsonContent(type="string", example="15.25")
+     * )
+     * @OA\Response(
+     *     response=417,
+     *     description="students have no grades yet, so no global average available"
+     * )
      * @OA\Tag(name="Grades")
      */
     public function average(): Response
@@ -31,7 +40,7 @@ class GradeController extends AbstractController
         try {
             return $this->json($this->gradeRepo->getGlobalAverage(), Response::HTTP_OK);
         } catch (NoGradesException $e) {
-            return $this->json($e->getMessage(), Response::HTTP_OK);
+            return $this->json($e->getMessage(), Response::HTTP_EXPECTATION_FAILED);
         } catch (HttpException $e) {
             return $this->json($e->getMessage(), $e->getStatusCode());
         }

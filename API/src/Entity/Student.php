@@ -9,6 +9,7 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use OpenApi\Annotations as OA;
 
 /**
  * @ORM\Entity(repositoryClass=StudentRepository::class)
@@ -27,28 +28,30 @@ class Student
     /**
      * For security matters, to avoid URLs guessing
      * @ORM\Column(type="string", length=255, unique=true)
-     * @Groups({"student:read", "student:create"})
+     * @Groups({"student:read", "student:created"})
+     * @OA\Property(description="unique auto-generated identifier of student")
      */
     private $identifier;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"student:read", "student:create"})
+     * @Groups({"student:read", "student:created", "student:write"})
      * @Assert\NotBlank
      */
     private $name;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"student:read", "student:create"})
+     * @Groups({"student:read", "student:created", "student:write"})
      * @Assert\NotBlank
      */
     private $firstname;
 
     /**
      * @ORM\Column(type="date")
-     * @Groups({"student:read", "student:create"})
+     * @Groups({"student:read", "student:created", "student:write"})
      * @Assert\NotBlank
+     * @OA\Property(example="YYYY-MM-DD")
      */
     private $birthdate;
 
@@ -61,6 +64,16 @@ class Student
     public function __construct()
     {
         $this->grades = new ArrayCollection();
+    }
+
+    /**
+     * Generates a unique identifier for a student
+     *
+     * @ORM\PrePersist
+     */
+    public function computeUniqueID(): void
+    {
+        $this->identifier = uniqid();
     }
 
     public function getId(): ?int
@@ -144,13 +157,5 @@ class Student
         $this->identifier = $identifier;
 
         return $this;
-    }
-
-    /**
-     * @ORM\PrePersist
-     */
-    public function computeUniqueID(): void
-    {
-        $this->identifier = uniqid();
     }
 }

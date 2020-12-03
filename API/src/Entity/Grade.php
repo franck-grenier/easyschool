@@ -16,7 +16,7 @@ class Grade
      * @ORM\Id
      * @ORM\GeneratedValue
      * @ORM\Column(type="integer")
-     * @Groups({"student:read", "grade:create"})
+     * @Groups({"student:read", "grade:created"})
      */
     private $id;
 
@@ -25,14 +25,14 @@ class Grade
      * @Assert\NotBlank
      * @Assert\GreaterThanOrEqual(0)
      * @Assert\LessThanOrEqual(20)
-     * @Groups({"student:read", "grade:create"})
+     * @Groups({"student:read", "grade:created"})
      */
     private $grade;
 
     /**
      * @ORM\Column(type="string", length=255)
      * @Assert\NotBlank
-     * @Groups({"student:read", "grade:create"})
+     * @Groups({"student:read", "grade:created"})
      */
     private $subject;
 

@@ -17,6 +17,7 @@ use Doctrine\ORM\EntityManagerInterface;
 use App\Exception\NoGradesException;
 use Symfony\Component\Serializer\Exception\NotEncodableValueException;
 use OpenApi\Annotations as OA;
+use Nelmio\ApiDocBundle\Annotation\Model;
 
 class StudentsController extends AbstractController
 {
@@ -33,7 +34,15 @@ class StudentsController extends AbstractController
      * Returns all students
      *
      * @Route("/students", name="students_list", methods={"GET"})
-
+     *
+     * @OA\Response(
+     *     response=200,
+     *     description="a JSON array of students",
+     *     @OA\JsonContent(
+     *        type="array",
+     *        @OA\Items(ref=@Model(type=Student::class, groups={"student:read"}))
+     *     )
+     * )
      * @OA\Tag(name="Students")
      */
     public function getAll(Request $request): Response
@@ -42,12 +51,22 @@ class StudentsController extends AbstractController
     }
 
     /**
-     * Returns one student from its identifier
+     * Returns one student and its grades from identifier
      *
      * @todo utiliser l'autowiring pour injecter directement l'entity Student
      *       à partir de l'identifier sans avoir à faire appel au repo
      *
      * @Route("/students/{identifier}", name="student_by_identifier", methods={"GET"})
+     *
+     * @OA\Response(
+     *     response=200,
+     *     description="a JSON student object with its grades",
+     *     @Model(type=Student::class, groups={"student:read"})
+     * )
+     * @OA\Response(
+     *     response=404,
+     *     description="no student found with identifier")
+     * )
      * @OA\Tag(name="Students")
      */
     public function getOne(Request $request, String $identifier = null): Response
@@ -66,6 +85,23 @@ class StudentsController extends AbstractController
      *
      * @Route("/students", name="student_create", methods={"POST"})
      *
+     * @OA\RequestBody(
+     *     description="JSON object with mandatory student data",
+     *     required=true,
+     *     @OA\JsonContent(
+     *         type="object",
+     *         ref=@Model(type=Student::class, groups={"student:write"})
+     *     )
+     * )
+     * @OA\Response(
+     *     response=201,
+     *     description="the new student JSON object created",
+     *     @Model(type=Student::class, groups={"student:created"})
+     * )
+     * @OA\Response(
+     *     response=400,
+     *     description="bad request, unable to create new student, something wrong with your request body")
+     * )
      * @OA\Tag(name="Students")
      */
     public function create(
@@ -100,6 +136,27 @@ class StudentsController extends AbstractController
      *
      * @Route("/students/{identifier}", name="student_update", methods={"PATCH", "PUT"})
      *
+     * @OA\RequestBody(
+     *     description="JSON object with student data (all of or subset) to update",
+     *     required=true,
+     *     @OA\JsonContent(
+     *         type="object",
+     *         ref=@Model(type=Student::class, groups={"student:write"})
+     *     )
+     * )
+     * @OA\Response(
+     *     response=200,
+     *     description="student updated",
+     *     @Model(type=Student::class, groups={"student:created"})
+     * )
+     * @OA\Response(
+     *     response=404,
+     *     description="no student found with identifier"
+     * )
+     * @OA\Response(
+     *     response=400,
+     *     description="bad request, unable to update student, something wrong with your request body"
+     * )
      * @OA\Tag(name="Students")
      */
     public function update(
@@ -127,7 +184,7 @@ class StudentsController extends AbstractController
             $entityManager->persist($updatedStudent);
             $entityManager->flush();
 
-            return $this->json($updatedStudent, Response::HTTP_OK, [], ['groups' => 'student:create']);
+            return $this->json($updatedStudent, Response::HTTP_OK, [], ['groups' => 'student:created']);
         } catch (HttpException $e) {
             return $this->json($e->getMessage(), $e->getStatusCode());
         }
@@ -138,6 +195,14 @@ class StudentsController extends AbstractController
      *
      * @Route("/students/{identifier}", name="student_delete", methods={"DELETE"})
      *
+     * @OA\Response(
+     *     response=204,
+     *     description="student deleted"
+     * )
+     * @OA\Response(
+     *     response=404,
+     *     description="no student found with identifier"
+     * )
      * @OA\Tag(name="Students")
      */
     public function delete(Request $request, EntityManagerInterface $entityManager, String $identifier = null): Response
@@ -158,12 +223,20 @@ class StudentsController extends AbstractController
      *
      * @Route("/students/{identifier}/grades", name="student_add_grade", methods={"POST"})
      *
+     * @OA\Response(
+     *     response=201,
+     *     description="student graded",
+     *     @Model(type=Grade::class, groups={"grade:created"})
+     * )
+     * @OA\Response(
+     *     response=404,
+     *     description="no student found with identifier"
+     * )
+     * @OA\Response(
+     *     response=400,
+     *     description="bad request, unable to grade student, something wrong with your request body"
+     * )
      * @OA\Tag(name="Students")
-     *
-     * @param Request $request
-     * @param EntityManagerInterface $entityManager
-     * @param String|null $identifier
-     * @return Response
      */
     public function addGrade(
         Request $request,
@@ -191,7 +264,7 @@ class StudentsController extends AbstractController
             $grade->setStudent($studentToGrade);
             $entityManager->flush();
 
-            return $this->json($grade, Response::HTTP_CREATED, [], ['groups' => 'grade:create']);
+            return $this->json($grade, Response::HTTP_CREATED, [], ['groups' => 'grade:created']);
         } catch (HttpException $e) {
             return $this->json($e->getMessage(), $e->getStatusCode());
         }
@@ -203,9 +276,20 @@ class StudentsController extends AbstractController
      *
      * @Route("/students/{identifier}/grades/average", name="student_average_grade", methods={"GET"})
      *
+     * @OA\Response(
+     *     response=200,
+     *     description="student's average grade",
+     *     @OA\JsonContent(type="string", example="17.33")
+     * )
+     * @OA\Response(
+     *     response=417,
+     *     description="student has no grades yet, so no average available"
+     * )
+     * @OA\Response(
+     *     response=404,
+     *     description="no student found with identifier"
+     * )
      * @OA\Tag(name="Students")
-     *
-     * @param String $identifier
      */
     public function averageGrade(String $identifier): Response
     {
@@ -215,7 +299,7 @@ class StudentsController extends AbstractController
 
             return $this->json($averageGrade, Response::HTTP_OK);
         } catch (NoGradesException $e) {
-            return $this->json($e->getMessage(), Response::HTTP_OK);
+            return $this->json($e->getMessage(), Response::HTTP_EXPECTATION_FAILED);
         } catch (HttpException $e) {
             return $this->json($e->getMessage(), $e->getStatusCode());
         }
