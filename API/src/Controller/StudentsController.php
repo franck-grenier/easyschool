@@ -122,7 +122,7 @@ class StudentsController extends AbstractController
             $entityManager->persist($student);
             $entityManager->flush();
 
-            return $this->json($student, Response::HTTP_CREATED, [], ['groups' => 'student:create']);
+            return $this->json($student, Response::HTTP_CREATED, [], ['groups' => 'student:created']);
         } catch (NotEncodableValueException $e) {
             return $this->json($e->getMessage(), Response::HTTP_BAD_REQUEST);
         } catch (HttpException $e) {
@@ -223,6 +223,14 @@ class StudentsController extends AbstractController
      *
      * @Route("/students/{identifier}/grades", name="student_add_grade", methods={"POST"})
      *
+     * @OA\RequestBody(
+     *     description="JSON object with mandatory grade data",
+     *     required=true,
+     *     @OA\JsonContent(
+     *         type="object",
+     *         ref=@Model(type=Grade::class, groups={"grade:write"})
+     *     )
+     * )
      * @OA\Response(
      *     response=201,
      *     description="student graded",

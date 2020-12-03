@@ -25,14 +25,14 @@ class Grade
      * @Assert\NotBlank
      * @Assert\GreaterThanOrEqual(0)
      * @Assert\LessThanOrEqual(20)
-     * @Groups({"student:read", "grade:created"})
+     * @Groups({"student:read", "grade:created", "grade:write"})
      */
     private $grade;
 
     /**
      * @ORM\Column(type="string", length=255)
      * @Assert\NotBlank
-     * @Groups({"student:read", "grade:created"})
+     * @Groups({"student:read", "grade:created", "grade:write"})
      */
     private $subject;
 
