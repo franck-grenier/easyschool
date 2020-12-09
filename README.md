@@ -37,7 +37,8 @@ $ symfony server:start -d
 
 ### 5 - Play with the up and running API ! 
 
-I provided you with a Postman collection including examples of each available request : `API/easyschool.postman_collection.json`
+I provided you with a Postman collection including examples of each available request : `API/easyschool.postman_collection.json`.
+
 The API documentation is available on `/api/doc`.
 
 
