@@ -28,29 +28,30 @@ class Student
     /**
      * For security matters, to avoid URLs guessing
      * @ORM\Column(type="string", length=255, unique=true)
-     * @Groups({"student:read", "student:created"})
+     * @Groups({"student:read", "student:created", "student:update"})
      * @OA\Property(description="unique auto-generated identifier of student")
+     * @Assert\NotBlank(groups={"student:update"})
      */
     private $identifier;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"student:read", "student:created", "student:write"})
-     * @Assert\NotBlank
+     * @Groups({"student:read", "student:created", "student:write", "student:update"})
+     * @Assert\NotBlank(groups={"student:write","student:update"})
      */
     private $name;
 
     /**
      * @ORM\Column(type="string", length=255)
-     * @Groups({"student:read", "student:created", "student:write"})
-     * @Assert\NotBlank
+     * @Groups({"student:read", "student:created", "student:write", "student:update"})
+     * @Assert\NotBlank(groups={"student:write","student:update"})
      */
     private $firstname;
 
     /**
      * @ORM\Column(type="date")
-     * @Groups({"student:read", "student:created", "student:write"})
-     * @Assert\NotBlank
+     * @Groups({"student:read", "student:created", "student:write", "student:update"})
+     * @Assert\NotBlank(groups={"student:write", "student:update"})
      * @OA\Property(example="YYYY-MM-DD")
      */
     private $birthdate;

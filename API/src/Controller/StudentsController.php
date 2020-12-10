@@ -105,7 +105,7 @@ class StudentsController extends AbstractController
             $data = $request->getContent();
             $student = $serializer->deserialize($data, Student::class, 'json');
 
-            $errors = $validator->validate($student);
+            $errors = $validator->validate($student , null , ['groups' => 'student:write']);
             if (count($errors) > 0) {
                 return $this->json($errors, Response::HTTP_BAD_REQUEST);
             }
@@ -125,14 +125,14 @@ class StudentsController extends AbstractController
      * Update student method handling both PATCH and PUT verbs on a single route, not "HTTP conventional"...
      * but very practical for a client
      *
-     * @Route("/students/{identifier}", name="student_update", methods={"PATCH", "PUT"})
+     * @Route("/students/{identifier}", name="student_update", methods={"PUT"})
      *
      * @OA\RequestBody(
-     *     description="JSON object with student data (all of or subset) to update",
+     *     description="JSON object with student data (all of them) to update",
      *     required=true,
      *     @OA\JsonContent(
      *         type="object",
-     *         ref=@Model(type=Student::class, groups={"student:write"})
+     *         ref=@Model(type=Student::class, groups={"student:update"})
      *     )
      * )
      * @OA\Response(
@@ -159,22 +159,30 @@ class StudentsController extends AbstractController
     ): Response {
         try {
             $data = $request->getContent();
-            $updatedStudent = $serializer->deserialize(
+            $studentToUpdateData = $serializer->deserialize(
+                $data,
+                Student::class,
+                'json'
+            );
+
+            $errors = $validator->validate($studentToUpdateData , null , ['groups' => 'student:update']);
+            if (count($errors) > 0) {
+                return $this->json($errors, Response::HTTP_BAD_REQUEST);
+            }
+
+            // not good to deserialize once again...
+            // @todo find a way to update entity $studentToUpdate from already deserialized and validated $studentToUpdateData entity
+            $serializer->deserialize(
                 $data,
                 Student::class,
                 'json',
                 ['object_to_populate' => $studentToUpdate]
             );
 
-            $errors = $validator->validate($updatedStudent);
-            if (count($errors) > 0) {
-                return $this->json($errors, Response::HTTP_BAD_REQUEST);
-            }
-
-            $entityManager->persist($updatedStudent);
+            $entityManager->persist($studentToUpdate);
             $entityManager->flush();
 
-            return $this->json($updatedStudent, Response::HTTP_OK, [], ['groups' => 'student:created']);
+            return $this->json($studentToUpdate, Response::HTTP_OK, [], ['groups' => 'student:created']);
         } catch (HttpException $e) {
             return $this->json($e->getMessage(), $e->getStatusCode());
         }

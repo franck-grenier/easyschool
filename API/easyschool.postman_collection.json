@@ -54,7 +54,7 @@
 		{
 			"name": "/students/{identifier}",
 			"request": {
-				"method": "PATCH",
+				"method": "PUT",
 				"header": [],
 				"body": {
 					"mode": "raw",
