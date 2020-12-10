@@ -53,9 +53,6 @@ class StudentsController extends AbstractController
     /**
      * Returns one student and its grades from identifier
      *
-     * @todo utiliser l'autowiring pour injecter directement l'entity Student
-     *       à partir de l'identifier sans avoir à faire appel au repo
-     *
      * @Route("/students/{identifier}", name="student_by_identifier", methods={"GET"})
      *
      * @OA\Response(
@@ -69,15 +66,9 @@ class StudentsController extends AbstractController
      * )
      * @OA\Tag(name="Students")
      */
-    public function getOne(Request $request, String $identifier = null): Response
+    public function getOne( Student $student ): Response
     {
-        try {
-            $student = $this->studentRepo->findOneByIdentifier($identifier);
-
-            return $this->json($student, Response::HTTP_OK, [], ['groups' => 'student:read']);
-        } catch (HttpException $e) {
-            return $this->json($e->getMessage(), $e->getStatusCode());
-        }
+        return $this->json($student, Response::HTTP_OK, [], ['groups' => 'student:read']);
     }
 
     /**
@@ -164,10 +155,9 @@ class StudentsController extends AbstractController
         SerializerInterface $serializer,
         EntityManagerInterface $entityManager,
         ValidatorInterface $validator,
-        String $identifier = null
+        Student $studentToUpdate
     ): Response {
         try {
-            $studentToUpdate = $this->studentRepo->findOneByIdentifier($identifier);
             $data = $request->getContent();
             $updatedStudent = $serializer->deserialize(
                 $data,
@@ -205,13 +195,11 @@ class StudentsController extends AbstractController
      * )
      * @OA\Tag(name="Students")
      */
-    public function delete(Request $request, EntityManagerInterface $entityManager, String $identifier = null): Response
+    public function delete(Request $request, EntityManagerInterface $entityManager, Student $studentToDelete): Response
     {
         try {
-            $studentToDelete = $this->studentRepo->findOneByIdentifier($identifier);
             $entityManager->remove($studentToDelete);
             $entityManager->flush();
-
             return $this->json("", Response::HTTP_NO_CONTENT);
         } catch (HttpException $e) {
             return $this->json($e->getMessage(), $e->getStatusCode());
@@ -251,11 +239,9 @@ class StudentsController extends AbstractController
         SerializerInterface $serializer,
         EntityManagerInterface $entityManager,
         ValidatorInterface $validator,
-        String $identifier = null
+        Student $studentToGrade
     ): Response {
         try {
-            $studentToGrade = $this->studentRepo->findOneByIdentifier($identifier);
-
             $data = $request->getContent();
             $grade = $serializer->deserialize(
                 $data,
@@ -299,12 +285,10 @@ class StudentsController extends AbstractController
      * )
      * @OA\Tag(name="Students")
      */
-    public function averageGrade(String $identifier): Response
+    public function averageGrade(Student $student): Response
     {
         try {
-            $student = $this->studentRepo->findOneByIdentifier($identifier);
             $averageGrade = $this->gradeRepo->getStudentAverage($student);
-
             return $this->json($averageGrade, Response::HTTP_OK);
         } catch (NoGradesException $e) {
             return $this->json($e->getMessage(), Response::HTTP_EXPECTATION_FAILED);
